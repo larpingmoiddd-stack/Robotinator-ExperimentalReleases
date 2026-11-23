@@ -105,9 +105,11 @@ static GtkWidget *create_terminal(const char *shell_path) {
     vte_terminal_set_scrollback_lines(VTE_TERMINAL(term), 10000);
     vte_terminal_set_mouse_autohide(VTE_TERMINAL(term), TRUE);
 
-    GdkRGBA bg = {0.06, 0.07, 0.09, 1.0};
-    GdkRGBA fg = {0.88, 0.92, 0.96, 1.0};
+    GdkRGBA bg = {0.16, 0.20, 0.25, 1.0};
+    GdkRGBA fg = {0.96, 0.95, 0.85, 1.0};
     vte_terminal_set_colors(VTE_TERMINAL(term), &fg, &bg, NULL, 0);
+    GdkRGBA cur = {0.98, 0.88, 0.25, 1.0};
+    vte_terminal_set_color_cursor(VTE_TERMINAL(term), &cur);
 
     g_signal_connect(term, "focus-in-event", G_CALLBACK(on_term_focus), NULL);
     g_signal_connect(term, "button-press-event", G_CALLBACK(on_term_button_press), NULL);
@@ -237,10 +239,17 @@ static void populate_shells(GtkComboBoxText *combo) {
 
 int main(int argc, char *argv[]) {
     gtk_init(&argc, &argv);
+    GtkCssProvider *css = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(css,
+        "window, box { background-color: #2c3540; color: #f4f1d0; }"
+        "button, combobox button { background: #3e4a59; color: #fef08a; border: 1px solid #facc15; border-radius: 4px; padding: 3px 8px; }"
+        "button:checked { background: #facc15; color: #1e293b; font-weight: bold; }"
+        "paned > separator { background-color: #facc15; min-width: 3px; min-height: 3px; }", -1, NULL);
+    gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     is_flatpak = g_file_test("/.flatpak-info", G_FILE_TEST_EXISTS);
 
     GtkWidget *win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(win), "Robotinator");
+    gtk_window_set_title(GTK_WINDOW(win), "Robotinator [Bender Edition]");
     gtk_window_set_default_size(GTK_WINDOW(win), 1100, 680);
     g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect(win, "key-press-event", G_CALLBACK(on_window_keypress), NULL);
